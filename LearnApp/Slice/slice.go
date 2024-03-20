@@ -54,4 +54,10 @@ func main() {
 
 	s33 := make([]int, 6) // 省略 cap，相当于 cap = len。
 	fmt.Println(s33, len(s33), cap(s33))
+
+	slice1 := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	d1 := slice1[6:8]
+	fmt.Println(d1, len(d1))
+	d2 := slice1[:6:8]
+	fmt.Println(d2, len(d2))
 }
