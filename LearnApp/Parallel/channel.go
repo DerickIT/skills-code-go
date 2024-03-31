@@ -7,7 +7,7 @@ func recv(c chan int) {
 	fmt.Println("接收成功", ret)
 }
 
-func main() {
+func mai12n() {
 	ch := make(chan int)
 	go recv(ch)
 	ch <- 10
