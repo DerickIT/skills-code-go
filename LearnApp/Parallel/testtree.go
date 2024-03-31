@@ -38,7 +38,7 @@ func Same(t1, t2 *tree.Tree) bool {
 	}
 }
 
-func main() {
+func mai21n() {
 	// 测试 Walk 函数
 	ch := make(chan int)
 	go Walk(tree.New(1), ch)
