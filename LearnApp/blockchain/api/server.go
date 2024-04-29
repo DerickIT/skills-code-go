@@ -21,7 +21,7 @@ type APIError struct {
 	Error string
 }
 
-type Blogc struct {
+type Block struct {
 	Hash          string
 	Version       uint32
 	DataHash      string
@@ -81,4 +81,48 @@ func (s *Server) handleGetTx(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, tx)
+}
+
+func (s *Server) handleGetBlock(c echo.Context) error {
+	hashOrID := c.Param("hashorid")
+	height, err := strconv.Atio(hashOrID)
+	if err != nil {
+		block, err := s.bc.GetBlock(uint32(height))
+		if err != nil {
+			return c.Json(http.StatusBadRequest, APIError{Error: err.Error()})
+		}
+		return c.JSON(http.StatusOK, intoJsonBlock(block))
+	}
+
+	b, err := hex.DecodeString(hashOrID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, APIError{Error: err.Error()})
+	}
+	block, err := s.bc.GetBlockByHash(types.HashFromBytes(b))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, APIError{Error: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, intoJsonBlock(block))
+}
+
+func intoJsonBlock(block *core.Block) Block {
+	txResponse := TxResponse{
+		TxCount: uint(len(block.Transaction)),
+		Hashes:  make([]string, len(block.Transaction)),
+	}
+	for i := 0; i < int(txResponse.TxCount); i++ {
+		txResponse.Hashes[i] = block.Transaction[i].Hash(core.TxHasher{}).String()
+	}
+	return Block{
+		Hash:          block.Hash(core.BlockHasher{}).String(),
+		Version:       block.Header.Version,
+		Height:        block.Header.Height,
+		DataHash:      block.Header.DataHash.String(),
+		PrevBlockHash: block.Header.PrevBlockHash.String(),
+		Timestamp:     block.Header.Timestamp,
+		Validator:     block.Validator.Address().String(),
+		Signature:     block.Signature.String(),
+		TxResponse:    txResponse,
+	}
 }
